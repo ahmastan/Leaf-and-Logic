@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { format, addDays } from "date-fns";
 import { ArrowLeft } from "lucide-react";
 import PlantIdentifier from "../components/identify/PlantIdentifier";
+import PlantSearch from "../components/identify/PlantSearch";
 import { toast } from "sonner";
 import {
   createUserPlant,
@@ -125,6 +126,7 @@ export default function IdentifyPlant() {
         </div>
       </div>
 
+      <PlantSearch onSelected={handlePlantIdentified} />
       <PlantIdentifier onIdentified={handlePlantIdentified} />
     </div>
   );

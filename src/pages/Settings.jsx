@@ -21,6 +21,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
 
   const [settings, setSettings] = useState({
+    full_name: "",
     location: "",
     climate: "temperate",
     pet_safety_mode: false,
@@ -36,6 +37,7 @@ export default function Settings() {
       }
       try {
         const profile = await getProfile(user.id);
+        if (profile?.full_name) setSettings((s) => ({ ...s, full_name: profile.full_name }));
         if (profile?.location) setSettings((s) => ({ ...s, location: profile.location }));
         if (profile?.climate) setSettings((s) => ({ ...s, climate: profile.climate }));
         if (profile?.pet_safety_mode !== undefined)
@@ -75,14 +77,23 @@ export default function Settings() {
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
       <div className="mb-8">
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border">
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border mb-4">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
             <User className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="font-semibold">{user?.full_name || user?.email || "Plant Lover"}</p>
+            <p className="font-semibold">{settings.full_name || user?.full_name || user?.email || "Plant Lover"}</p>
             <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">Name</Label>
+          <Input
+            value={settings.full_name}
+            onChange={(e) => setSettings({ ...settings, full_name: e.target.value })}
+            placeholder="Your name"
+            className="mt-1 rounded-xl"
+          />
         </div>
       </div>
 

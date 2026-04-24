@@ -9,4 +9,5 @@ export const env = {
     url: import.meta.env.VITE_PLANT_ID_URL ?? '',
     apiKey: import.meta.env.VITE_PLANT_ID_API_KEY ?? '',
   },
+
 };

@@ -54,9 +54,12 @@ function parseDifficulty(watering, light) {
 function parseToxicity(toxicity) {
   if (!toxicity) return { pets: false, humans: false };
   const t = String(typeof toxicity === 'object' ? JSON.stringify(toxicity) : toxicity).toLowerCase();
+  const notToxic = t.includes('not toxic') || t.includes('non-toxic') || t.includes('non toxic') || t.includes('safe');
+  if (notToxic) return { pets: false, humans: false };
+  const isToxic = t.includes('toxic') || t.includes('poison') || t.includes('harmful');
   return {
-    pets: t.includes('toxic') || t.includes('poison') || t.includes('harmful'),
-    humans: (t.includes('toxic to human') || t.includes('human') && t.includes('toxic')) && !t.includes('not toxic'),
+    pets: isToxic,
+    humans: isToxic && (t.includes('human') || !t.includes('pet')),
   };
 }
 

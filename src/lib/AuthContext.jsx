@@ -15,8 +15,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAuth();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsAuthenticated(!!session?.user);
+      if (session?.user) {
+        checkAuth();
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     });
     return () => subscription?.unsubscribe();
   }, []);
@@ -29,8 +33,15 @@ export const AuthProvider = ({ children }) => {
       let u = session?.user ?? null;
       if (u?.id) {
         try {
-          const profile = await getProfile(u.id);
-          if (profile) u = { ...u, full_name: profile.full_name ?? u.email, ...profile };
+          const metaName = u.user_metadata?.full_name;
+          let profile = await getProfile(u.id);
+          if (profile && !profile.full_name && metaName) {
+            profile = await upsertProfile(u.id, { full_name: metaName });
+          } else if (!profile && metaName) {
+            profile = await upsertProfile(u.id, { full_name: metaName });
+          }
+          if (profile) u = { ...u, full_name: profile.full_name ?? metaName ?? u.email, ...profile };
+          else if (metaName) u = { ...u, full_name: metaName };
         } catch (_) {}
       }
       setUser(u);

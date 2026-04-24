@@ -10,6 +10,7 @@ export default function Login() {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -18,13 +19,21 @@ export default function Login() {
       toast.error("Please enter your email and password.");
       return;
     }
+    if (mode === "signup" && !name.trim()) {
+      toast.error("Please enter your name.");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name.trim() } },
+        });
         if (error) throw error;
         toast.success("Account created! You are now logged in.");
       }
@@ -49,6 +58,19 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Name</Label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="mt-1 rounded-xl"
+                autoComplete="name"
+              />
+            </div>
+          )}
           <div>
             <Label className="text-xs text-muted-foreground">Email</Label>
             <Input
