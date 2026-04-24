@@ -1,0 +1,89 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 140 20% 98%;
+    --foreground: 150 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 10%;
+    --primary: 152 55% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 20% 94%;
+    --secondary-foreground: 150 20% 25%;
+    --muted: 140 15% 93%;
+    --muted-foreground: 150 10% 45%;
+    --accent: 38 80% 55%;
+    --accent-foreground: 38 80% 15%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 140 15% 90%;
+    --input: 140 15% 88%;
+    --ring: 152 55% 38%;
+    --radius: 0.75rem;
+    --chart-1: 152 55% 38%;
+    --chart-2: 38 80% 55%;
+    --chart-3: 200 60% 50%;
+    --chart-4: 340 65% 55%;
+    --chart-5: 270 50% 55%;
+  }
+
+  .dark {
+    --background: 150 20% 6%;
+    --foreground: 140 15% 95%;
+    --card: 150 20% 9%;
+    --card-foreground: 140 15% 95%;
+    --popover: 150 20% 9%;
+    --popover-foreground: 140 15% 95%;
+    --primary: 152 55% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 15% 15%;
+    --secondary-foreground: 140 15% 85%;
+    --muted: 150 15% 15%;
+    --muted-foreground: 140 10% 55%;
+    --accent: 38 80% 55%;
+    --accent-foreground: 38 80% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 15% 18%;
+    --input: 150 15% 18%;
+    --ring: 152 55% 45%;
+    --chart-1: 152 55% 45%;
+    --chart-2: 38 80% 55%;
+    --chart-3: 200 60% 55%;
+    --chart-4: 340 65% 60%;
+    --chart-5: 270 50% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 999px;
+}
+
+/* Smooth transitions */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
