@@ -15,46 +15,50 @@ export default function IdentifyPlant() {
   const navigate = useNavigate();
 
   const handlePlantIdentified = async (plantData, photoUrl) => {
-    const userPlant = await createUserPlant({
-      plant_name: plantData.common_name,
-      scientific_name: plantData.scientific_name,
-      plant_type: plantData.plant_type,
-      photo_url: photoUrl,
-      location: "indoor",
-      pot_size: "medium",
-      health_status: "healthy",
-      last_watered: format(new Date(), "yyyy-MM-dd"),
-      watering_interval_days: plantData.watering_interval_days || 7,
-      sunlight: plantData.sunlight || "medium",
-      difficulty: plantData.difficulty || "easy",
-      toxicity_pets: plantData.toxicity_pets || false,
-      photos_history: [
-        {
-          url: photoUrl,
-          date: format(new Date(), "yyyy-MM-dd"),
-          note: "First identification photo",
-        },
-      ],
-    });
+    let userPlant;
 
-    await createPlant({
-      common_name: plantData.common_name,
-      scientific_name: plantData.scientific_name,
-      plant_type: plantData.plant_type,
-      difficulty: plantData.difficulty,
-      sunlight: plantData.sunlight,
-      watering_interval_days: plantData.watering_interval_days,
-      humidity: plantData.humidity,
-      temperature_min: plantData.temperature_min,
-      temperature_max: plantData.temperature_max,
-      soil_type: plantData.soil_type,
-      fertilize_interval_days: plantData.fertilize_interval_days,
-      toxicity_pets: plantData.toxicity_pets,
-      toxicity_humans: plantData.toxicity_humans,
-      pruning_notes: plantData.pruning_notes,
-      description: plantData.description,
-      image_url: photoUrl,
-    });
+    try {
+      userPlant = await createUserPlant({
+        plant_name: plantData.common_name,
+        scientific_name: plantData.scientific_name,
+        plant_type: plantData.plant_type,
+        photo_url: photoUrl,
+        location: "indoor",
+        pot_size: "medium",
+        health_status: "healthy",
+        last_watered: format(new Date(), "yyyy-MM-dd"),
+        watering_interval_days: plantData.watering_interval_days || 7,
+        sunlight: plantData.sunlight || "medium",
+        difficulty: plantData.difficulty || "easy",
+        toxicity_pets: plantData.toxicity_pets || false,
+      });
+    } catch (err) {
+      toast.error(`Failed to save plant: ${err?.message || String(err)}`);
+      return;
+    }
+
+    try {
+      await createPlant({
+        common_name: plantData.common_name,
+        scientific_name: plantData.scientific_name,
+        plant_type: plantData.plant_type,
+        difficulty: plantData.difficulty,
+        sunlight: plantData.sunlight,
+        watering_interval_days: plantData.watering_interval_days,
+        humidity: plantData.humidity,
+        temperature_min: plantData.temperature_min,
+        temperature_max: plantData.temperature_max,
+        soil_type: plantData.soil_type,
+        fertilize_interval_days: plantData.fertilize_interval_days,
+        toxicity_pets: plantData.toxicity_pets,
+        toxicity_humans: plantData.toxicity_humans,
+        pruning_notes: plantData.pruning_notes,
+        description: plantData.description,
+        image_url: photoUrl,
+      });
+    } catch (_) {
+      // plant may already exist in reference table — not a blocker
+    }
 
     const today = new Date();
     const waterInterval = plantData.watering_interval_days || 7;
@@ -94,7 +98,11 @@ export default function IdentifyPlant() {
       interval_days: 14,
     });
 
-    await bulkCreateCareTasks(tasksToCreate);
+    try {
+      await bulkCreateCareTasks(tasksToCreate);
+    } catch (_) {
+      // care tasks failure is non-blocking
+    }
 
     toast.success(`${plantData.common_name} added to your garden!`);
     navigate(createPageUrl("PlantProfile") + `?id=${userPlant.id}`);

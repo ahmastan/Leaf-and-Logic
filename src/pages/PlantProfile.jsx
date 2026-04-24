@@ -6,7 +6,7 @@ import {
   deleteUserPlant,
   deleteCareTask,
 } from "@/api/supabaseData";
-import { getSpeciesDetails, searchSpecies } from "@/api/perenualApi";
+import { getPlantCareInfo } from "@/api/plantIdApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -86,13 +86,13 @@ export default function PlantProfile() {
     if (!plant) return;
     setTipLoading(true);
     try {
-      const list = await searchSpecies(plant.plant_name || plant.scientific_name || "");
-      if (list.length > 0) {
-        const details = await getSpeciesDetails(list[0].id);
-        setAiTip(details.description || "No care tip available for this plant.");
-      } else {
-        setAiTip(`Keep your ${plant.plant_name} in ${plant.location || "indoor"} conditions. Water every ${plant.watering_interval_days || 7} days.`);
-      }
+      const details = await getPlantCareInfo(plant.plant_name || plant.scientific_name || "");
+      const parts = [];
+      if (details.description) parts.push(details.description);
+      if (details.watering_interval_days) parts.push(`Water every ${details.watering_interval_days} days.`);
+      if (details.sunlight) parts.push(`Light: ${details.sunlight.replace(/_/g, " ")}.`);
+      if (details.pruning_notes) parts.push(details.pruning_notes);
+      setAiTip(parts.length > 0 ? parts.join(" ") : `Keep your ${plant.plant_name} in ${plant.location || "indoor"} conditions and water every ${plant.watering_interval_days || 7} days.`);
     } catch (e) {
       setAiTip(`Keep your ${plant.plant_name} in ${plant.location || "indoor"} conditions. Water every ${plant.watering_interval_days || 7} days.`);
     }

@@ -49,11 +49,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     supabase.auth.signOut();
-    if (shouldRedirect) window.location.href = '/';
+    if (shouldRedirect) window.location.href = '/Login';
   };
 
   const navigateToLogin = () => {
-    window.location.href = '/';
+    window.location.href = '/Login';
   };
 
   const updateMe = async (settings) => {

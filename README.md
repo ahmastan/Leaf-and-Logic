@@ -1,20 +1,19 @@
 # Leaf and Logic
 
-Plant care app with identification (Pl@ntNet), care info (Perenual), and your garden in Supabase.
+Plant care app with identification (Plant.id), care info, and your garden in Supabase.
 
 ## Prerequisites
 
 - Node.js 18+
 - Supabase project
-- Pl@ntNet API key
-- Perenual API key
+- Plant.id API Key
 
 ## Setup
 
 1. Clone and install:
    ```bash
-   npm install
-   ```
+   npm ins
+  
 
 2. Copy env example and add your keys:
    ```bash
@@ -22,8 +21,7 @@ Plant care app with identification (Pl@ntNet), care info (Perenual), and your ga
    ```
    Edit `.env.local` and set:
    - **Supabase:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (from Supabase dashboard → Settings → API)
-   - **Pl@ntNet:** `VITE_PLANTNET_API_KEY` from [my.plantnet.org/settings/api-key](https://my.plantnet.org/settings/api-key); optionally `VITE_PLANTNET_API_URL` (default: `https://my-api.plantnet.org`)
-   - **Perenual:** `VITE_PERENUAL_API_KEY` from [perenual.com/user/developer](https://www.perenual.com/user/developer); optionally `VITE_PERENUAL_API_URL` (default: `https://www.perenual.com`)
+   - **Plant.id** `VITE_PLANT_ID_API_KEY` from [admin.kindwise.com/api_keys](https://admin.kindwise.com/api_keys)
 
 3. Create Supabase tables and storage (run in SQL Editor and create bucket in Storage):
 
@@ -142,3 +140,4 @@ The app uses Supabase Auth. Configure an auth method (e.g. Email/Password or OAu
 - `npm run dev` – start dev server
 - `npm run build` – production build
 - `npm run preview` – preview production build
+# Leaf-and-Logic

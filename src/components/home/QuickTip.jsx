@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Lightbulb, RefreshCw } from "lucide-react";
-import { searchSpecies, getSpeciesDetails } from "@/api/perenualApi";
 
 const fallbackTips = [
   "Water your plants in the morning for best absorption.",

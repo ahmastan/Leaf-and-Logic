@@ -1,16 +1,16 @@
 import React, { useState, useRef } from "react";
-import { identifyPlant } from "@/api/plantnetApi";
-import { searchSpecies, getSpeciesDetails } from "@/api/perenualApi";
+import { identifyPlant, getPlantCareInfo } from "@/api/plantIdApi";
 import { uploadPlantPhoto, getUserId } from "@/api/supabaseData";
-import { Camera, Upload, Loader2, Leaf, X } from "lucide-react";
+import { Camera, Loader2, Leaf, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 export default function PlantIdentifier({ onIdentified }) {
-  const [imageUrl, setImageUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploadedUrl, setUploadedUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [savingIdx, setSavingIdx] = useState(null);
   const [results, setResults] = useState(null);
   const fileRef = useRef(null);
   const selectedFileRef = useRef(null);
@@ -20,8 +20,25 @@ export default function PlantIdentifier({ onIdentified }) {
     selectedFileRef.current = file;
     const preview = URL.createObjectURL(file);
     setPreviewUrl(preview);
+    setUploadedUrl(null);
     setResults(null);
-    setImageUrl(preview);
+
+    // Upload in background — does not block the Identify button
+    (async () => {
+      try {
+        const userId = await getUserId();
+        const safeName = file.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
+        const path = userId
+          ? `${userId}/${Date.now()}-${safeName}`
+          : `anon/${Date.now()}-${safeName}`;
+        const url = await uploadPlantPhoto(file, path);
+        setUploadedUrl(url);
+      } catch (err) {
+        console.error('Photo upload failed:', err?.message);
+        toast.error(`Photo upload failed: ${err?.message || 'Check Supabase Storage bucket setup.'}`);
+        setUploadedUrl(null);
+      }
+    })();
   };
 
   const identifyPlantFromImage = async () => {
@@ -32,144 +49,70 @@ export default function PlantIdentifier({ onIdentified }) {
     }
     setLoading(true);
     try {
-      const plantnetResults = await identifyPlant(file);
+      const idResults = await identifyPlant(file);
       const enriched = [];
-      for (const r of plantnetResults.slice(0, 3)) {
-        const name = r.common_name || r.scientific_name;
-        if (!name) {
-          enriched.push({
-            common_name: "Unknown",
-            scientific_name: r.scientific_name || "",
-            confidence: r.score,
-            description: "Identification uncertain.",
-            plant_type: "houseplant",
-            difficulty: "easy",
-            sunlight: "medium",
-            watering_interval_days: 7,
-            fertilize_interval_days: 30,
-            toxicity_pets: false,
-            toxicity_humans: false,
-            pruning_notes: null,
-            humidity: "medium",
-            temperature_min: null,
-            temperature_max: null,
-            soil_type: null,
-          });
-          continue;
-        }
+
+      for (const r of idResults.slice(0, 3)) {
+        const name = r.scientific_name || r.common_name;
         try {
-          const list = await searchSpecies(name);
-          if (list.length > 0) {
-            const details = await getSpeciesDetails(list[0].id);
-            enriched.push({
-              common_name: details.common_name || r.common_name,
-              scientific_name: details.scientific_name || r.scientific_name,
-              confidence: r.score,
-              description: details.description,
-              plant_type: details.plant_type,
-              difficulty: details.difficulty,
-              sunlight: details.sunlight,
-              watering_interval_days: details.watering_interval_days,
-              fertilize_interval_days: details.fertilize_interval_days,
-              toxicity_pets: details.toxicity_pets,
-              toxicity_humans: details.toxicity_humans,
-              pruning_notes: details.pruning_notes,
-              humidity: details.humidity,
-              temperature_min: details.temperature_min,
-              temperature_max: details.temperature_max,
-              soil_type: details.soil_type,
-            });
-          } else {
-            enriched.push({
-              common_name: r.common_name,
-              scientific_name: r.scientific_name,
-              confidence: r.score,
-              description: "Care details not found. Add watering and light as needed.",
-              plant_type: "houseplant",
-              difficulty: "easy",
-              sunlight: "medium",
-              watering_interval_days: 7,
-              fertilize_interval_days: 30,
-              toxicity_pets: false,
-              toxicity_humans: false,
-              pruning_notes: null,
-              humidity: "medium",
-              temperature_min: null,
-              temperature_max: null,
-              soil_type: null,
-            });
-          }
+          const details = await getPlantCareInfo(name);
+          enriched.push({
+            common_name: details.common_name || r.common_name,
+            scientific_name: details.scientific_name || r.scientific_name,
+            confidence: r.score,
+            plant_type: details.plant_type,
+            difficulty: details.difficulty,
+            sunlight: details.sunlight,
+            watering_interval_days: details.watering_interval_days,
+            humidity: details.humidity,
+            temperature_min: details.temperature_min,
+            temperature_max: details.temperature_max,
+            soil_type: details.soil_type,
+            fertilize_interval_days: details.fertilize_interval_days,
+            toxicity_pets: details.toxicity_pets,
+            toxicity_humans: details.toxicity_humans,
+            pruning_notes: details.pruning_notes,
+            description: details.description,
+          });
         } catch (_) {
           enriched.push({
             common_name: r.common_name,
             scientific_name: r.scientific_name,
             confidence: r.score,
-            description: "Care details not found.",
             plant_type: "houseplant",
-            difficulty: "easy",
-            sunlight: "medium",
+            difficulty: "moderate",
+            sunlight: "bright_indirect",
             watering_interval_days: 7,
-            fertilize_interval_days: 30,
-            toxicity_pets: false,
-            toxicity_humans: false,
-            pruning_notes: null,
             humidity: "medium",
             temperature_min: null,
             temperature_max: null,
             soil_type: null,
+            fertilize_interval_days: 30,
+            toxicity_pets: false,
+            toxicity_humans: false,
+            pruning_notes: null,
+            description: "Care details unavailable. Water regularly and provide adequate light.",
           });
         }
       }
+
       setResults(enriched);
     } catch (err) {
       console.error(err);
-      toast.error(err?.message || "Identification failed. Check your Pl@ntNet API key in .env.local.");
-      setResults([{
-        common_name: "Identification failed",
-        scientific_name: "",
-        confidence: 0,
-        description: err?.message || "Could not identify plant. Check your Pl@ntNet API key and try again.",
-        plant_type: "houseplant",
-        difficulty: "easy",
-        sunlight: "medium",
-        watering_interval_days: 7,
-        fertilize_interval_days: 30,
-        toxicity_pets: false,
-        toxicity_humans: false,
-        pruning_notes: null,
-        humidity: "medium",
-        temperature_min: null,
-        temperature_max: null,
-        soil_type: null,
-      }]);
+      toast.error(err?.message || "Identification failed. Check your VITE_PLANT_ID_API_KEY in .env.local.");
     }
     setLoading(false);
   };
 
-  const handleSelectMatch = async (match) => {
-    let photoUrl = imageUrl;
-    const file = selectedFileRef.current || fileRef.current?.files?.[0];
-    if (file) {
-      try {
-        const userId = await getUserId();
-        const path = `${userId}/${Date.now()}-${file.name}`;
-        photoUrl = await uploadPlantPhoto(file, path);
-      } catch (_) {
-        photoUrl = previewUrl;
-      }
-    } else if (previewUrl) {
-      photoUrl = previewUrl;
-    }
-    onIdentified(match, photoUrl);
-  };
-
   const reset = () => {
-    setImageUrl(null);
     setPreviewUrl(null);
+    setUploadedUrl(null);
     setResults(null);
     selectedFileRef.current = null;
     if (fileRef.current) fileRef.current.value = "";
   };
+
+  const photoUrl = uploadedUrl || previewUrl;
 
   return (
     <div className="space-y-4">
@@ -257,17 +200,28 @@ export default function PlantIdentifier({ onIdentified }) {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    onClick={() => handleSelectMatch(match)}
-                    className="p-4 rounded-2xl border border-border bg-card cursor-pointer hover:border-primary/40 hover:shadow-md transition-all active:scale-[0.98]"
+                    onClick={async () => {
+                      if (savingIdx !== null) return;
+                      setSavingIdx(idx);
+                      try {
+                        await onIdentified(match, uploadedUrl || null);
+                      } finally {
+                        setSavingIdx(null);
+                      }
+                    }}
+                    className={`p-4 rounded-2xl border border-border bg-card cursor-pointer hover:border-primary/40 hover:shadow-md transition-all active:scale-[0.98] ${savingIdx !== null ? "opacity-60 pointer-events-none" : ""}`}
                   >
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <p className="font-semibold">{match.common_name}</p>
                         <p className="text-xs text-muted-foreground italic">
                           {match.scientific_name}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 ml-2 shrink-0">
+                        {savingIdx === idx && (
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        )}
                         <div
                           className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                             match.confidence >= 0.8
@@ -283,6 +237,9 @@ export default function PlantIdentifier({ onIdentified }) {
                     </div>
                     <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
                       {match.description}
+                    </p>
+                    <p className="text-xs text-primary font-medium mt-2">
+                      {savingIdx === idx ? "Adding to your plants..." : "Tap to add to my plants →"}
                     </p>
                   </motion.div>
                 ))}
