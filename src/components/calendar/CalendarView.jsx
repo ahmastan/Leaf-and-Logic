@@ -34,12 +34,12 @@ const taskDotColors = {
 };
 
 const taskBgColors = {
-  watering: "bg-blue-50 border-blue-100",
-  fertilizing: "bg-amber-50 border-amber-100",
-  pruning: "bg-emerald-50 border-emerald-100",
-  repotting: "bg-orange-50 border-orange-100",
-  pest_check: "bg-red-50 border-red-100",
-  rotation: "bg-purple-50 border-purple-100",
+  watering: "bg-blue-500/10 border-blue-500/20",
+  fertilizing: "bg-amber-500/10 border-amber-500/20",
+  pruning: "bg-emerald-500/10 border-emerald-500/20",
+  repotting: "bg-orange-500/10 border-orange-500/20",
+  pest_check: "bg-red-500/10 border-red-500/20",
+  rotation: "bg-purple-500/10 border-purple-500/20",
 };
 
 const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

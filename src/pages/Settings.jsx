@@ -12,11 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Bell, PawPrint, LogOut, Loader2, Save, User } from "lucide-react";
+import { MapPin, Bell, PawPrint, LogOut, Loader2, Save, User, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme, COLOR_THEMES } from "@/lib/ThemeContext";
 
 export default function Settings() {
   const { user, updateMe, logout } = useAuth();
+  const { theme, toggleTheme, colorTheme, setColorTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -171,6 +173,55 @@ export default function Settings() {
               setSettings({ ...settings, pet_safety_mode: val })
             }
           />
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          {theme === "dark" ? (
+            <Moon className="w-4 h-4 text-primary" />
+          ) : (
+            <Sun className="w-4 h-4 text-primary" />
+          )}
+          <h2 className="font-semibold">Appearance</h2>
+        </div>
+        <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border mb-4">
+          <div>
+            <p className="text-sm font-medium">Dark Mode</p>
+            <p className="text-xs text-muted-foreground">Switch between light and dark</p>
+          </div>
+          <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-3">Accent Color</p>
+          <div className="flex gap-3">
+            {COLOR_THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setColorTheme(t.id)}
+                title={t.label}
+                className="flex flex-col items-center gap-1.5 group"
+              >
+                <div
+                  className={`w-9 h-9 rounded-full transition-all ${
+                    colorTheme === t.id
+                      ? "scale-110"
+                      : "opacity-70 hover:opacity-100 hover:scale-105"
+                  }`}
+                  style={{
+                    backgroundColor: t.color,
+                    outline: colorTheme === t.id ? `3px solid ${t.color}` : "none",
+                    outlineOffset: "3px",
+                  }}
+                />
+                <span className={`text-[10px] font-medium transition-colors ${
+                  colorTheme === t.id ? "text-foreground" : "text-muted-foreground"
+                }`}>
+                  {t.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

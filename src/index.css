@@ -87,3 +87,154 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Theme transition */
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Color themes ─────────────────────────────── */
+
+/* Blue – Ocean */
+[data-color="blue"] {
+  --primary: 210 75% 45%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 210 75% 45%;
+  --background: 210 30% 98%;
+  --foreground: 210 30% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 30% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 30% 10%;
+  --secondary: 210 20% 94%;
+  --secondary-foreground: 210 20% 25%;
+  --muted: 210 20% 93%;
+  --muted-foreground: 210 10% 45%;
+  --border: 210 20% 90%;
+  --input: 210 20% 88%;
+}
+.dark[data-color="blue"] {
+  --primary: 210 75% 58%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 210 75% 58%;
+  --background: 210 25% 6%;
+  --foreground: 210 15% 95%;
+  --card: 210 25% 9%;
+  --card-foreground: 210 15% 95%;
+  --popover: 210 25% 9%;
+  --popover-foreground: 210 15% 95%;
+  --secondary: 210 15% 15%;
+  --secondary-foreground: 210 15% 85%;
+  --muted: 210 15% 15%;
+  --muted-foreground: 210 10% 55%;
+  --border: 210 15% 18%;
+  --input: 210 15% 18%;
+}
+
+/* Lavender */
+[data-color="lavender"] {
+  --primary: 262 52% 55%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 262 52% 55%;
+  --background: 262 25% 98%;
+  --foreground: 262 30% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 262 30% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 262 30% 10%;
+  --secondary: 262 18% 94%;
+  --secondary-foreground: 262 18% 25%;
+  --muted: 262 18% 93%;
+  --muted-foreground: 262 10% 45%;
+  --border: 262 18% 90%;
+  --input: 262 18% 88%;
+}
+.dark[data-color="lavender"] {
+  --primary: 262 52% 68%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 262 52% 68%;
+  --background: 262 20% 6%;
+  --foreground: 262 15% 95%;
+  --card: 262 20% 9%;
+  --card-foreground: 262 15% 95%;
+  --popover: 262 20% 9%;
+  --popover-foreground: 262 15% 95%;
+  --secondary: 262 15% 15%;
+  --secondary-foreground: 262 15% 85%;
+  --muted: 262 15% 15%;
+  --muted-foreground: 262 10% 55%;
+  --border: 262 15% 18%;
+  --input: 262 15% 18%;
+}
+
+/* Terracotta – Earthy */
+[data-color="terracotta"] {
+  --primary: 18 65% 42%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 18 65% 42%;
+  --background: 20 28% 98%;
+  --foreground: 20 30% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 30% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 30% 10%;
+  --secondary: 20 18% 94%;
+  --secondary-foreground: 20 18% 25%;
+  --muted: 20 18% 93%;
+  --muted-foreground: 20 10% 45%;
+  --border: 20 18% 90%;
+  --input: 20 18% 88%;
+}
+.dark[data-color="terracotta"] {
+  --primary: 18 65% 55%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 18 65% 55%;
+  --background: 18 22% 6%;
+  --foreground: 20 15% 95%;
+  --card: 18 22% 9%;
+  --card-foreground: 20 15% 95%;
+  --popover: 18 22% 9%;
+  --popover-foreground: 20 15% 95%;
+  --secondary: 18 15% 15%;
+  --secondary-foreground: 20 15% 85%;
+  --muted: 18 15% 15%;
+  --muted-foreground: 20 10% 55%;
+  --border: 18 15% 18%;
+  --input: 18 15% 18%;
+}
+
+/* Dusty Rose */
+[data-color="rose"] {
+  --primary: 340 58% 48%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 340 58% 48%;
+  --background: 340 25% 98%;
+  --foreground: 340 30% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 340 30% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 340 30% 10%;
+  --secondary: 340 16% 94%;
+  --secondary-foreground: 340 16% 25%;
+  --muted: 340 16% 93%;
+  --muted-foreground: 340 10% 45%;
+  --border: 340 16% 90%;
+  --input: 340 16% 88%;
+}
+.dark[data-color="rose"] {
+  --primary: 340 58% 62%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 340 58% 62%;
+  --background: 340 20% 6%;
+  --foreground: 340 15% 95%;
+  --card: 340 20% 9%;
+  --card-foreground: 340 15% 95%;
+  --popover: 340 20% 9%;
+  --popover-foreground: 340 15% 95%;
+  --secondary: 340 15% 15%;
+  --secondary-foreground: 340 15% 85%;
+  --muted: 340 15% 15%;
+  --muted-foreground: 340 10% 55%;
+  --border: 340 15% 18%;
+  --input: 340 15% 18%;
+}
