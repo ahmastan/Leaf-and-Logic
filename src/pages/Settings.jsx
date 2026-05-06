@@ -12,15 +12,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Bell, PawPrint, LogOut, Loader2, Save, User, Moon, Sun } from "lucide-react";
+import { MapPin, Bell, PawPrint, LogOut, Loader2, Save, User, Moon, Sun, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme, COLOR_THEMES } from "@/lib/ThemeContext";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
-  const { user, updateMe, logout } = useAuth();
+  const { user, updateMe, logout, deleteAccount } = useAuth();
   const { theme, toggleTheme, colorTheme, setColorTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [settings, setSettings] = useState({
     full_name: "",
@@ -64,6 +75,17 @@ export default function Settings() {
 
   const handleLogout = () => {
     logout(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await deleteAccount();
+    } catch (e) {
+      toast.error(e?.message || "Could not delete account");
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
   };
 
   if (loading) {
@@ -237,11 +259,52 @@ export default function Settings() {
       <Button
         variant="outline"
         onClick={handleLogout}
-        className="w-full h-12 rounded-2xl font-semibold"
+        className="w-full h-12 rounded-2xl font-semibold mb-8"
       >
         <LogOut className="w-4 h-4 mr-2" />
         Log Out
       </Button>
+
+      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Trash2 className="w-4 h-4 text-destructive" />
+          <h2 className="font-semibold text-destructive">Danger zone</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Permanently delete your account, plants, tasks, and profile. This cannot be undone.
+        </p>
+        <Button
+          type="button"
+          variant="destructive"
+          className="w-full rounded-xl"
+          onClick={() => setDeleteDialogOpen(true)}
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete account
+        </Button>
+      </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All your plants, care tasks, and settings will be removed. You will be signed out
+              immediately.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={handleDeleteAccount}
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete forever"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

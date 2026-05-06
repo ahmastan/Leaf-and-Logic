@@ -142,3 +142,19 @@ export async function uploadPlantPhoto(file, path) {
   const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
   return urlData?.publicUrl ?? data.path;
 }
+
+/** Remove all objects under plant-photos/{userId}/ (best-effort; ignores failures). */
+export async function deleteUserPlantPhotos(userId) {
+  if (!userId) return;
+  try {
+    const { data: files, error: listErr } = await supabase.storage.from(BUCKET).list(userId, {
+      limit: 1000,
+    });
+    if (listErr || !files?.length) return;
+    const paths = files.map((f) => `${userId}/${f.name}`);
+    const { error: rmErr } = await supabase.storage.from(BUCKET).remove(paths);
+    if (rmErr) console.warn('deleteUserPlantPhotos:', rmErr.message);
+  } catch (e) {
+    console.warn('deleteUserPlantPhotos:', e?.message || e);
+  }
+}

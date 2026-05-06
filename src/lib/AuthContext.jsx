@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/api/supabaseClient';
-import { getProfile, upsertProfile } from '@/api/supabaseData';
+import { getProfile, upsertProfile, deleteUserPlantPhotos } from '@/api/supabaseData';
 
 const AuthContext = createContext();
 
@@ -73,6 +73,26 @@ export const AuthProvider = ({ children }) => {
     setUser((prev) => (prev ? { ...prev, ...settings } : null));
   };
 
+  /** Deletes auth user via Edge Function `delete-account` (removes profile / plants / tasks by DB cascade). */
+  const deleteAccount = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const uid = session?.user?.id;
+    if (!uid) throw new Error('Not signed in');
+
+    await deleteUserPlantPhotos(uid);
+
+    const { data, error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+    if (error) {
+      throw new Error(error.message || 'Could not delete account. Is the delete-account Edge Function deployed?');
+    }
+    if (data?.error) throw new Error(data.error);
+
+    setUser(null);
+    setIsAuthenticated(false);
+    await supabase.auth.signOut();
+    window.location.href = '/Login';
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -86,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         navigateToLogin,
         checkAppState: checkAuth,
         updateMe,
+        deleteAccount,
       }}
     >
       {children}
