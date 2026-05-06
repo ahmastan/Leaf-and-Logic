@@ -63,8 +63,14 @@ function parseToxicity(toxicity) {
   };
 }
 
+function capitalize(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function buildCareProfile(plantName, details) {
-  const common = details?.common_names?.[0] || plantName;
+  const raw = details?.common_names?.[0] || plantName;
+  const common = capitalize(raw);
   const scientific = details?.scientific_name || '';
   const rawDesc = details?.description?.value ?? details?.description ?? null;
   const description = typeof rawDesc === 'string' && rawDesc.length > 0
@@ -130,7 +136,7 @@ export async function identifyPlant(file) {
   }
 
   return suggestions.slice(0, 3).map((s) => ({
-    common_name: s.name || 'Unknown',
+    common_name: capitalize(s.name || 'Unknown'),
     scientific_name: s.name || '',
     score: typeof s.probability === 'number' ? parseFloat(s.probability.toFixed(2)) : 0,
   }));

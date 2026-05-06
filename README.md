@@ -7,13 +7,14 @@ Plant care app with identification (Plant.id), care info, and your garden in Sup
 - Node.js 18+
 - Supabase project
 - Plant.id API Key
+- (Optional) [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) — deploys **delete-account**
 
 ## Setup
 
 1. Clone and install:
    ```bash
-   npm ins
-  
+   npm install
+   ```
 
 2. Copy env example and add your keys:
    ```bash
@@ -21,7 +22,9 @@ Plant care app with identification (Plant.id), care info, and your garden in Sup
    ```
    Edit `.env.local` and set:
    - **Supabase:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (from Supabase dashboard → Settings → API)
-   - **Plant.id** `VITE_PLANT_ID_API_KEY` from [admin.kindwise.com/api_keys](https://admin.kindwise.com/api_keys)
+   - **Plant.id** `VITE_PLANT_ID_URL`, `VITE_PLANT_ID_API_KEY` from [admin.kindwise.com/api_keys](https://admin.kindwise.com/api_keys)
+   - **Perenual** (optional) `VITE_PERENUAL_KEY` for richer search/results
+
 
 3. Create Supabase tables and storage (run in SQL Editor and create bucket in Storage):
 
@@ -124,20 +127,105 @@ create policy "Users can CRUD own user_plants" on public.user_plants for all usi
 create policy "Users can CRUD own care_tasks" on public.care_tasks for all using (auth.uid() = user_id);
 ```
 
-In Supabase Dashboard → Storage, create a **public** bucket named `plant-photos` (or update `BUCKET` in `src/api/supabaseData.js`).
+4. **Storage bucket**
 
-4. Run locally:
+   In Supabase Dashboard → **Storage**, create a **public** bucket named `plant-photos` (or change `BUCKET` in `src/api/supabaseData.js`).
+
+5. **Storage policies (recommended)**
+
+   Photos are stored under `plant-photos/{user_id}/...`. Add policies so users can manage **their own** prefix (needed for identification uploads, listing/deleting files on account deletion):
+
+```sql
+-- Adjust bucket_id if you changed BUCKET in supabaseData.js
+
+create policy "Users can upload own plant photos"
+on storage.objects for insert
+to authenticated
+with check (
+  bucket_id = 'plant-photos'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Covers GET URLs and storage.list() for the user's folder
+create policy "Users can read own plant photos"
+on storage.objects for select
+to authenticated
+using (
+  bucket_id = 'plant-photos'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+create policy "Users can update own plant photos"
+on storage.objects for update
+to authenticated
+using (
+  bucket_id = 'plant-photos'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+create policy "Users can delete own plant photos"
+on storage.objects for delete
+to authenticated
+using (
+  bucket_id = 'plant-photos'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+If policies with these names already exist, drop them first or pick different names.
+
+6. Run locally:
    ```bash
    npm run dev
    ```
 
 ## Auth
 
-The app uses Supabase Auth. Configure an auth method (e.g. Email/Password or OAuth) in Supabase Dashboard → Authentication. Without signing in, plant list and tasks will be empty.
+The app uses Supabase Auth. Configure an auth method (e.g. Email/Password or OAuth) in Supabase Dashboard → **Authentication**. Without signing in, plant list and tasks will be empty.
+
+## Delete account (Settings)
+
+The **Settings** page includes a **Danger zone → Delete account** action. It:
+
+1. Removes objects under `plant-photos/{user_id}/` in Storage (best effort).
+2. Calls an Edge Function **`delete-account`** that deletes the user from **Auth** using the service role.
+3. Relies on foreign keys (`on delete cascade` on `profiles`, `user_plants`, and `care_tasks` as in the SQL above) so app data is removed when the auth user is deleted.
+4. Signs the user out and redirects to the login page.
+
+The Edge Function source lives at `supabase/functions/delete-account/index.ts`. It does **not** appear in the Supabase project until you deploy it.
+
+### Deploy the `delete-account` Edge Function
+
+1. Install the [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) and log in:
+   ```bash
+   supabase login
+   ```
+
+2. From the project root, link your project (reference ID is under **Project Settings → General**):
+   ```bash
+   supabase link --project-ref YOUR_PROJECT_REF
+   ```
+
+   If the CLI reports no local Supabase config, run `supabase init` once, then link again.
+
+3. Deploy:
+   ```bash
+   supabase functions deploy delete-account
+   ```
+
+   One-shot alternative without saving link metadata:
+   ```bash
+   supabase functions deploy delete-account --project-ref YOUR_PROJECT_REF
+   ```
+
+4. In **Edge Functions → delete-account**, keep **JWT verification** enabled so only authenticated users can invoke it.
+
+No extra environment variables are required in the frontend: `supabase.functions.invoke('delete-account')` uses your existing Supabase URL and anon key.
+
+
 
 ## Scripts
 
 - `npm run dev` – start dev server
 - `npm run build` – production build
 - `npm run preview` – preview production build
-# Leaf-and-Logic
