@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react";
 import { identifyPlant, getPlantCareInfo } from "@/api/plantIdApi";
 import { uploadPlantPhoto, getUserId } from "@/api/supabaseData";
-import { Camera, Loader2, Leaf, X } from "lucide-react";
+import { Camera, Loader2, Leaf, X, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PlantIdentifier({ onIdentified }) {
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -12,8 +13,11 @@ export default function PlantIdentifier({ onIdentified }) {
   const [loading, setLoading] = useState(false);
   const [savingIdx, setSavingIdx] = useState(null);
   const [results, setResults] = useState(null);
+  const [showMobileOptions, setShowMobileOptions] = useState(false);
   const fileRef = useRef(null);
+  const cameraRef = useRef(null);
   const selectedFileRef = useRef(null);
+  const isMobile = useIsMobile();
 
   const handleFile = (file) => {
     if (!file) return;
@@ -108,8 +112,18 @@ export default function PlantIdentifier({ onIdentified }) {
     setPreviewUrl(null);
     setUploadedUrl(null);
     setResults(null);
+    setShowMobileOptions(false);
     selectedFileRef.current = null;
     if (fileRef.current) fileRef.current.value = "";
+    if (cameraRef.current) cameraRef.current.value = "";
+  };
+
+  const handleUploadZoneClick = () => {
+    if (isMobile) {
+      setShowMobileOptions(true);
+    } else {
+      fileRef.current?.click();
+    }
   };
 
   const photoUrl = uploadedUrl || previewUrl;
@@ -129,12 +143,19 @@ export default function PlantIdentifier({ onIdentified }) {
               ref={fileRef}
               type="file"
               accept="image/*"
+              className="hidden"
+              onChange={(e) => { handleFile(e.target.files[0]); setShowMobileOptions(false); }}
+            />
+            <input
+              ref={cameraRef}
+              type="file"
+              accept="image/*"
               capture="environment"
               className="hidden"
-              onChange={(e) => handleFile(e.target.files[0])}
+              onChange={(e) => { handleFile(e.target.files[0]); setShowMobileOptions(false); }}
             />
             <div
-              onClick={() => fileRef.current?.click()}
+              onClick={handleUploadZoneClick}
               className="border-2 border-dashed border-primary/30 rounded-3xl p-10 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-[0.98]"
             >
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
@@ -147,6 +168,59 @@ export default function PlantIdentifier({ onIdentified }) {
                 </p>
               </div>
             </div>
+
+            <AnimatePresence>
+              {showMobileOptions && (
+                <>
+                  <motion.div
+                    key="backdrop"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowMobileOptions(false)}
+                    className="fixed inset-0 bg-black/40 z-[59]"
+                  />
+                  <motion.div
+                    key="sheet"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                    className="fixed bottom-0 left-0 right-0 z-[60] bg-background rounded-t-3xl p-6 shadow-xl"
+                    style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" }}
+                  >
+                    <div className="w-10 h-1 rounded-full bg-muted mx-auto mb-6" />
+                    <p className="text-center font-semibold text-base mb-5">Add a Plant Photo</p>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={() => cameraRef.current?.click()}
+                        className="flex items-center gap-4 p-4 rounded-2xl bg-primary/10 hover:bg-primary/20 active:scale-[0.98] transition-all"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          <Camera className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-semibold text-sm">Take a Photo</p>
+                          <p className="text-xs text-muted-foreground">Use your camera</p>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => fileRef.current?.click()}
+                        className="flex items-center gap-4 p-4 rounded-2xl bg-muted hover:bg-muted/80 active:scale-[0.98] transition-all"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-foreground/10 flex items-center justify-center shrink-0">
+                          <FolderOpen className="w-5 h-5 text-foreground" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-semibold text-sm">Upload from Library</p>
+                          <p className="text-xs text-muted-foreground">Choose an existing photo</p>
+                        </div>
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </motion.div>
         ) : (
           <motion.div
