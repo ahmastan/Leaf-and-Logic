@@ -7,6 +7,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+function getSafeFileName(file) {
+  const mimeToExt = {
+    'image/jpeg': '.jpg',
+    'image/jpg': '.jpg',
+    'image/png': '.png',
+    'image/heic': '.heic',
+    'image/heif': '.heif',
+    'image/webp': '.webp',
+    'image/gif': '.gif',
+  };
+  const extFromMime = mimeToExt[file.type] || '.jpg';
+  const sanitized = (file.name || '').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
+  return sanitized || `photo_${Date.now()}${extFromMime}`;
+}
+
 export default function PlantIdentifier({ onIdentified }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadedUrl, setUploadedUrl] = useState(null);
@@ -17,6 +32,7 @@ export default function PlantIdentifier({ onIdentified }) {
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
   const selectedFileRef = useRef(null);
+  const uploadPromiseRef = useRef(null);
   const isMobile = useIsMobile();
 
   const handleFile = (file) => {
@@ -27,22 +43,24 @@ export default function PlantIdentifier({ onIdentified }) {
     setUploadedUrl(null);
     setResults(null);
 
-    // Upload in background — does not block the Identify button
-    (async () => {
+    const promise = (async () => {
       try {
         const userId = await getUserId();
-        const safeName = file.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
+        const safeName = getSafeFileName(file);
         const path = userId
           ? `${userId}/${Date.now()}-${safeName}`
           : `anon/${Date.now()}-${safeName}`;
         const url = await uploadPlantPhoto(file, path);
         setUploadedUrl(url);
+        return url;
       } catch (err) {
         console.error('Photo upload failed:', err?.message);
         toast.error(`Photo upload failed: ${err?.message || 'Check Supabase Storage bucket setup.'}`);
         setUploadedUrl(null);
+        return null;
       }
     })();
+    uploadPromiseRef.current = promise;
   };
 
   const identifyPlantFromImage = async () => {
@@ -114,6 +132,7 @@ export default function PlantIdentifier({ onIdentified }) {
     setResults(null);
     setShowMobileOptions(false);
     selectedFileRef.current = null;
+    uploadPromiseRef.current = null;
     if (fileRef.current) fileRef.current.value = "";
     if (cameraRef.current) cameraRef.current.value = "";
   };
@@ -278,7 +297,11 @@ export default function PlantIdentifier({ onIdentified }) {
                       if (savingIdx !== null) return;
                       setSavingIdx(idx);
                       try {
-                        await onIdentified(match, uploadedUrl || null);
+                        let photoUrl = uploadedUrl;
+                        if (!photoUrl && uploadPromiseRef.current) {
+                          photoUrl = await uploadPromiseRef.current;
+                        }
+                        await onIdentified(match, photoUrl || null);
                       } finally {
                         setSavingIdx(null);
                       }
