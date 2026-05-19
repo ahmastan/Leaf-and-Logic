@@ -30,8 +30,8 @@ export default function PlantHealthAlerts({ plants }) {
           type: "water",
           message: `Not watered in ${daysSince} days`,
           icon: Droplets,
-          color: "text-blue-600",
-          bg: "bg-blue-50",
+          color: "text-blue-500",
+          bg: "bg-blue-500/10",
         });
       }
     }

@@ -13,12 +13,12 @@ const taskIcons = {
 };
 
 const taskColors = {
-  watering: "bg-blue-50 text-blue-600 border-blue-100",
-  fertilizing: "bg-amber-50 text-amber-600 border-amber-100",
-  pruning: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  repotting: "bg-orange-50 text-orange-600 border-orange-100",
-  pest_check: "bg-red-50 text-red-600 border-red-100",
-  rotation: "bg-purple-50 text-purple-600 border-purple-100",
+  watering: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  fertilizing: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  pruning: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  repotting: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  pest_check: "bg-red-500/10 text-red-500 border-red-500/20",
+  rotation: "bg-purple-500/10 text-purple-500 border-purple-500/20",
 };
 
 export default function TodaysTasks({ tasks, onComplete, isLoading }) {
