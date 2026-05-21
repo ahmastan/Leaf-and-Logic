@@ -23,8 +23,6 @@ Plant care app with identification (Plant.id), care info, and your garden in Sup
    Edit `.env.local` and set:
    - **Supabase:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (from Supabase dashboard → Settings → API)
    - **Plant.id** `VITE_PLANT_ID_URL`, `VITE_PLANT_ID_API_KEY` from [admin.kindwise.com/api_keys](https://admin.kindwise.com/api_keys)
-   - **Perenual** (optional) `VITE_PERENUAL_KEY` for richer search/results
-
 
 3. Create Supabase tables and storage (run in SQL Editor and create bucket in Storage):
 
